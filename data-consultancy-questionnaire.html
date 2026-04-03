@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DataAxis — Data Infrastructure Assessment</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Google+Sans+Text:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Nunito+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --blue:        #1a73e8;
+  --blue-hover:  #1557b0;
+  --blue-light:  #e8f0fe;
+  --blue-mid:    #c5d9f9;
+  --blue-text:   #1967d2;
+  --red:         #ea4335;
+  --yellow:      #fbbc04;
+  --green:       #34a853;
+  --surface:     #ffffff;
+  --bg:          #f8f9fa;
+  --bg-2:        #f1f3f4;
+  --border:      #dadce0;
+  --border-2:    #e8eaed;
+  --ink:         #202124;
+  --ink-2:       #3c4043;
+  --ink-3:       #5f6368;
+  --ink-4:       #80868b;
+  --shadow-1:    0 1px 2px rgba(60,64,67,0.3), 0 1px 3px 1px rgba(60,64,67,0.15);
+  --shadow-2:    0 1px 3px rgba(60,64,67,0.3), 0 4px 8px 3px rgba(60,64,67,0.15);
+  --radius-sm:   8px;
+  --radius:      12px;
+  --radius-lg:   16px;
+  --font:        'Google Sans', 'Nunito Sans', sans-serif;
+  --font-text:   'Google Sans Text', 'Nunito Sans', sans-serif;
+  --ease:        cubic-bezier(0.2, 0, 0, 1);
+  --dur:         280ms;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: var(--font-text);
+  background: var(--bg);
+  color: var(--ink);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* HEADER */
+header {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 64px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border-2);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  z-index: 100;
+}
+
+.logo { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+
+.logo-glyph { display: flex; gap: 3px; align-items: flex-end; }
+.logo-bar { border-radius: 2px; }
+.logo-bar:nth-child(1) { width: 5px; height: 14px; background: var(--blue); }
+.logo-bar:nth-child(2) { width: 5px; height: 22px; background: var(--red); }
+.logo-bar:nth-child(3) { width: 5px; height: 10px; background: var(--yellow); }
+.logo-bar:nth-child(4) { width: 5px; height: 28px; background: var(--green); }
+
+.logo-name { font-family: var(--font); font-size: 18px; font-weight: 500; color: var(--ink); }
+.logo-name span { color: var(--blue); }
+
+.header-right { display: flex; align-items: center; gap: 12px; }
+.header-chip { font-family: var(--font); font-size: 12px; font-weight: 500; color: var(--ink-3); background: var(--bg-2); border: 1px solid var(--border); padding: 5px 14px; border-radius: 100px; }
+.header-avatar { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, var(--blue), var(--green)); display: flex; align-items: center; justify-content: center; font-family: var(--font); font-size: 12px; font-weight: 700; color: #fff; }
+
+/* STEPPER */
+.stepper-bar {
+  position: fixed;
+  top: 64px; left: 0; right: 0;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border-2);
+  z-index: 99;
+  padding: 0 24px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+.stepper-bar.visible { opacity: 1; }
+
+.step-pip { display: flex; align-items: center; flex: 1; }
+.step-dot {
+  width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--border);
+  background: var(--surface); display: flex; align-items: center; justify-content: center;
+  font-family: var(--font); font-size: 12px; font-weight: 500; color: var(--ink-4);
+  flex-shrink: 0; transition: all var(--dur) var(--ease); position: relative; z-index: 1;
+}
+.step-dot.done { background: var(--blue); border-color: var(--blue); color: #fff; }
+.step-dot.active { border-color: var(--blue); color: var(--blue); background: var(--blue-light); }
+.step-line { flex: 1; height: 2px; background: var(--border); transition: background var(--dur) var(--ease); }
+.step-line.done { background: var(--blue); }
+.step-pip:last-child .step-line { display: none; }
+
+/* MAIN */
+main {
+  flex: 1;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 140px 24px 60px;
+}
+
+.slides { width: 100%; max-width: 700px; }
+.slide { display: none; }
+.slide.active { display: block; animation: fadeUp var(--dur) var(--ease) both; }
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* CARD */
+.card {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-1);
+  padding: 40px 48px;
+  margin-bottom: 16px;
+}
+
+/* QUESTION TYPOGRAPHY */
+.section-label {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: var(--font); font-size: 11px; font-weight: 500;
+  color: var(--blue-text); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 12px;
+}
+.sdot { width: 6px; height: 6px; border-radius: 50%; background: var(--blue); }
+
+.q-title { font-family: var(--font); font-size: clamp(22px, 4vw, 30px); font-weight: 400; color: var(--ink); line-height: 1.25; margin-bottom: 8px; letter-spacing: -0.01em; }
+.q-title strong { font-weight: 700; }
+.q-sub { font-size: 14px; color: var(--ink-3); margin-bottom: 28px; line-height: 1.6; }
+
+/* OPTION CHIPS */
+.option-grid { display: grid; gap: 8px; margin-bottom: 28px; }
+.option-grid.cols-2 { grid-template-columns: 1fr 1fr; }
+.option-grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+
+.opt-chip {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: var(--radius); padding: 14px 16px;
+  cursor: pointer; transition: all var(--dur) var(--ease);
+  text-align: left; user-select: none;
+}
+.opt-chip:hover { border-color: var(--blue); background: var(--blue-light); }
+.opt-chip.selected { border-color: var(--blue); background: var(--blue-light); }
+
+.opt-radio {
+  width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--border);
+  flex-shrink: 0; display: flex; align-items: center; justify-content: center; transition: all 0.2s;
+}
+.opt-chip.selected .opt-radio { border-color: var(--blue); background: var(--blue); }
+.opt-radio-dot { width: 8px; height: 8px; border-radius: 50%; background: #fff; opacity: 0; transform: scale(0.5); transition: all 0.15s; }
+.opt-chip.selected .opt-radio-dot { opacity: 1; transform: scale(1); }
+
+.opt-emoji { font-size: 20px; line-height: 1; flex-shrink: 0; }
+.opt-body { flex: 1; }
+.opt-title { font-family: var(--font); font-size: 14px; font-weight: 500; color: var(--ink); line-height: 1.3; }
+.opt-sub { font-size: 12px; color: var(--ink-3); margin-top: 2px; line-height: 1.4; }
+
+/* CHECKBOX */
+.cb-grid { display: grid; gap: 8px; margin-bottom: 28px; }
+.cb-chip {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: var(--radius); padding: 14px 16px;
+  cursor: pointer; transition: all var(--dur) var(--ease); user-select: none;
+}
+.cb-chip:hover { border-color: var(--blue); background: var(--blue-light); }
+.cb-chip.checked { border-color: var(--blue); background: var(--blue-light); }
+
+.cb-box {
+  width: 20px; height: 20px; border-radius: 4px; border: 2px solid var(--border);
+  flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+  transition: all 0.2s; background: var(--surface);
+}
+.cb-chip.checked .cb-box { border-color: var(--blue); background: var(--blue); }
+.cb-tick { width: 10px; height: 7px; border-left: 2px solid #fff; border-bottom: 2px solid #fff; transform: rotate(-45deg) translateY(-1px); opacity: 0; transition: opacity 0.15s; }
+.cb-chip.checked .cb-tick { opacity: 1; }
+
+.cb-label-text { font-size: 14px; color: var(--ink-2); flex: 1; line-height: 1.4; }
+.cb-badge { font-family: var(--font); font-size: 10px; font-weight: 500; color: var(--ink-3); background: var(--bg-2); border: 1px solid var(--border); padding: 2px 8px; border-radius: 100px; white-space: nowrap; }
+.cb-chip.checked .cb-badge { background: var(--blue-mid); border-color: var(--blue-mid); color: var(--blue-text); }
+
+/* RANGE */
+.slider-wrap { margin-bottom: 28px; }
+.slider-track-label { display: flex; justify-content: space-between; font-size: 12px; color: var(--ink-3); margin-bottom: 8px; }
+input[type="range"] { -webkit-appearance: none; width: 100%; height: 4px; background: var(--border); border-radius: 2px; outline: none; cursor: pointer; }
+input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%; background: var(--blue); border: 2px solid var(--surface); box-shadow: 0 0 0 2px var(--blue); cursor: pointer; transition: box-shadow 0.2s; }
+input[type="range"]:hover::-webkit-slider-thumb { box-shadow: 0 0 0 4px rgba(26,115,232,0.2); }
+.slider-val-wrap { text-align: center; margin-top: 10px; }
+.slider-value { font-family: var(--font); font-size: 14px; font-weight: 500; color: var(--blue); background: var(--blue-light); display: inline-block; padding: 4px 16px; border-radius: 100px; border: 1px solid var(--blue-mid); }
+
+/* TEXT INPUTS */
+.text-field { width: 100%; background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--radius-sm); padding: 14px 16px; font-family: var(--font-text); font-size: 15px; color: var(--ink); outline: none; transition: border-color 0.2s; margin-bottom: 12px; display: block; }
+.text-field:focus { border-color: var(--blue); }
+.text-field::placeholder { color: var(--ink-4); }
+
+/* DIVIDER */
+.g-divider { height: 1px; background: var(--border-2); margin: 24px 0; }
+
+/* NAV */
+.nav-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 4px; }
+.btn-back { display: inline-flex; align-items: center; gap: 6px; background: transparent; border: 1.5px solid var(--border); border-radius: 100px; padding: 10px 20px; font-family: var(--font); font-size: 14px; font-weight: 500; color: var(--ink-2); cursor: pointer; transition: all 0.2s; }
+.btn-back:hover { background: var(--bg-2); border-color: var(--ink-3); }
+.btn-next { display: inline-flex; align-items: center; gap: 8px; background: var(--blue); border: none; border-radius: 100px; padding: 10px 24px; font-family: var(--font); font-size: 14px; font-weight: 500; color: #fff; cursor: pointer; transition: all 0.2s; margin-left: auto; box-shadow: 0 1px 3px rgba(26,115,232,0.4); }
+.btn-next:hover { background: var(--blue-hover); box-shadow: 0 2px 6px rgba(26,115,232,0.5); }
+.btn-next:disabled { background: var(--bg-2); color: var(--ink-4); box-shadow: none; cursor: not-allowed; }
+
+/* WELCOME */
+.welcome-logo-strip { display: flex; justify-content: center; align-items: flex-end; gap: 5px; margin-bottom: 20px; }
+.wl-bar { border-radius: 3px; }
+.wl-bar:nth-child(1) { width: 8px; height: 22px; background: var(--blue); }
+.wl-bar:nth-child(2) { width: 8px; height: 32px; background: var(--red); }
+.wl-bar:nth-child(3) { width: 8px; height: 16px; background: var(--yellow); }
+.wl-bar:nth-child(4) { width: 8px; height: 38px; background: var(--green); }
+
+.welcome-title { font-family: var(--font); font-size: clamp(26px, 4vw, 38px); font-weight: 400; color: var(--ink); line-height: 1.22; letter-spacing: -0.015em; margin-bottom: 12px; }
+.welcome-title strong { font-weight: 700; }
+.welcome-body { font-size: 15px; color: var(--ink-3); max-width: 520px; margin: 0 auto 28px; line-height: 1.65; }
+
+.stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 32px; max-width: 480px; margin-left: auto; margin-right: auto; }
+.stat-card { background: var(--bg); border: 1px solid var(--border-2); border-radius: var(--radius); padding: 16px; text-align: center; }
+.stat-num { font-family: var(--font); font-size: 26px; font-weight: 700; display: block; line-height: 1; }
+.stat-num.blue { color: var(--blue); }
+.stat-num.red { color: var(--red); }
+.stat-num.green { color: var(--green); }
+.stat-lbl { font-size: 12px; color: var(--ink-3); margin-top: 4px; display: block; }
+
+.btn-start { display: inline-flex; align-items: center; gap: 10px; background: var(--blue); color: #fff; border: none; border-radius: 100px; padding: 14px 32px; font-family: var(--font); font-size: 15px; font-weight: 500; cursor: pointer; transition: all 0.2s; box-shadow: 0 1px 3px rgba(26,115,232,0.4); }
+.btn-start:hover { background: var(--blue-hover); box-shadow: 0 4px 12px rgba(26,115,232,0.35); transform: translateY(-1px); }
+.welcome-terms { margin-top: 14px; font-size: 12px; color: var(--ink-4); }
+
+/* RESULTS */
+.g-completion-badge { display: inline-flex; align-items: center; gap: 8px; background: #e6f4ea; border: 1px solid #a8d5b5; border-radius: 100px; padding: 6px 16px; font-family: var(--font); font-size: 12px; font-weight: 500; color: #137333; margin-bottom: 16px; }
+.g-cdot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); }
+
+.results-title { font-family: var(--font); font-size: clamp(24px, 4vw, 34px); font-weight: 400; color: var(--ink); letter-spacing: -0.01em; margin-bottom: 6px; }
+.results-title strong { font-weight: 700; }
+.results-sub { font-size: 14px; color: var(--ink-3); }
+
+.maturity-card { background: var(--surface); border: 1px solid var(--border-2); border-radius: var(--radius-lg); box-shadow: var(--shadow-1); padding: 24px 28px; margin-bottom: 16px; display: flex; align-items: center; gap: 24px; }
+.maturity-score-wrap { text-align: center; flex-shrink: 0; }
+.maturity-num { font-family: var(--font); font-size: 44px; font-weight: 700; color: var(--blue); line-height: 1; }
+.maturity-score-lbl { font-size: 11px; color: var(--ink-4); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 4px; display: block; }
+.maturity-detail { flex: 1; }
+.maturity-stage-name { font-family: var(--font); font-size: 16px; font-weight: 500; color: var(--ink); margin-bottom: 8px; }
+.g-progress { height: 8px; background: var(--bg-2); border-radius: 4px; overflow: hidden; }
+.g-progress-fill { height: 100%; background: linear-gradient(90deg, var(--blue), var(--green)); border-radius: 4px; transition: width 0.9s cubic-bezier(0.4,0,0.2,1); width: 0%; }
+.maturity-note { font-size: 13px; color: var(--ink-3); margin-top: 6px; line-height: 1.5; }
+
+.service-grid { display: grid; gap: 12px; margin-bottom: 20px; }
+.svc-card { background: var(--surface); border: 1px solid var(--border-2); border-radius: var(--radius-lg); box-shadow: var(--shadow-1); padding: 20px 22px; display: flex; gap: 16px; align-items: flex-start; transition: box-shadow 0.2s; animation: fadeUp 0.4s var(--ease) both; }
+.svc-card:hover { box-shadow: var(--shadow-2); }
+.svc-card.top-match { border: 1.5px solid var(--blue); background: linear-gradient(135deg, #f0f6ff 0%, var(--surface) 60%); }
+
+.svc-icon { width: 48px; height: 48px; border-radius: 12px; background: var(--bg); border: 1px solid var(--border-2); display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+.svc-card.top-match .svc-icon { background: var(--blue-light); border-color: var(--blue-mid); }
+.svc-info { flex: 1; min-width: 0; }
+.svc-name { font-family: var(--font); font-size: 15px; font-weight: 500; color: var(--ink); display: flex; align-items: center; gap: 8px; margin-bottom: 4px; flex-wrap: wrap; }
+.top-pill { font-family: var(--font); font-size: 10px; font-weight: 500; color: var(--blue-text); background: var(--blue-light); border: 1px solid var(--blue-mid); padding: 2px 8px; border-radius: 100px; letter-spacing: 0.04em; text-transform: uppercase; }
+.svc-desc { font-size: 13px; color: var(--ink-3); line-height: 1.55; margin-bottom: 10px; }
+.tag-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.g-tag { font-size: 11px; font-weight: 500; color: var(--ink-3); background: var(--bg); border: 1px solid var(--border); padding: 3px 9px; border-radius: 4px; }
+.svc-card.top-match .g-tag { background: var(--blue-light); border-color: var(--blue-mid); color: var(--blue-text); }
+
+.cta-card { background: var(--surface); border: 1px solid var(--border-2); border-radius: var(--radius-lg); box-shadow: var(--shadow-1); padding: 32px; text-align: center; margin-bottom: 16px; }
+.cta-eyebrow { font-size: 12px; color: var(--ink-4); text-transform: uppercase; letter-spacing: 0.08em; font-family: var(--font); font-weight: 500; margin-bottom: 10px; }
+.cta-title { font-family: var(--font); font-size: 22px; font-weight: 500; color: var(--ink); margin-bottom: 8px; }
+.cta-sub { font-size: 14px; color: var(--ink-3); margin-bottom: 24px; }
+.cta-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+
+.btn-cta-filled { display: inline-flex; align-items: center; gap: 8px; background: var(--blue); color: #fff; border: none; border-radius: 100px; padding: 12px 24px; font-family: var(--font); font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s; box-shadow: 0 1px 3px rgba(26,115,232,0.4); }
+.btn-cta-filled:hover { background: var(--blue-hover); }
+.btn-cta-tonal { display: inline-flex; align-items: center; gap: 8px; background: var(--blue-light); color: var(--blue-text); border: 1px solid var(--blue-mid); border-radius: 100px; padding: 12px 24px; font-family: var(--font); font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s; }
+.btn-cta-tonal:hover { background: var(--blue-mid); }
+
+.restart-link { display: block; text-align: center; font-size: 13px; color: var(--blue); text-decoration: none; cursor: pointer; font-family: var(--font); font-weight: 500; }
+.restart-link:hover { text-decoration: underline; }
+
+/* FOOTER */
+footer { text-align: center; padding: 20px; font-size: 12px; color: var(--ink-4); border-top: 1px solid var(--border-2); background: var(--surface); }
+footer a { color: var(--blue); text-decoration: none; }
+
+/* RESPONSIVE */
+@media (max-width: 600px) {
+  .card { padding: 28px 20px; }
+  .option-grid.cols-2 { grid-template-columns: 1fr; }
+  .option-grid.cols-3 { grid-template-columns: 1fr 1fr; }
+  .stat-row { grid-template-columns: 1fr 1fr; }
+  .stat-row .stat-card:last-child { grid-column: span 2; }
+  .maturity-card { flex-direction: column; text-align: center; }
+  .stepper-bar { display: none; }
+  main { padding-top: 100px; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <a class="logo" href="#">
+    <div class="logo-glyph">
+      <div class="logo-bar"></div><div class="logo-bar"></div>
+      <div class="logo-bar"></div><div class="logo-bar"></div>
+    </div>
+    <span class="logo-name">Data<span>Axis</span></span>
+  </a>
+  <div class="header-right">
+    <span class="header-chip">Data Assessment</span>
+    <div class="header-avatar">DA</div>
+  </div>
+</header>
+
+<div class="stepper-bar" id="stepperBar"></div>
+
+<main>
+  <div class="slides">
+
+    <!-- SLIDE 0: WELCOME -->
+    <div class="slide active" data-slide="0">
+      <div class="card" style="text-align:center;">
+        <div class="welcome-logo-strip">
+          <div class="wl-bar"></div><div class="wl-bar"></div>
+          <div class="wl-bar"></div><div class="wl-bar"></div>
+        </div>
+        <h1 class="welcome-title">Discover what data can do<br><strong>for your business</strong></h1>
+        <p class="welcome-body">Answer 8 quick questions about your data infrastructure and goals. We'll generate a tailored service recommendation — free, in under 5 minutes.</p>
+        <div class="stat-row">
+          <div class="stat-card"><span class="stat-num blue">8</span><span class="stat-lbl">Questions</span></div>
+          <div class="stat-card"><span class="stat-num red">~5</span><span class="stat-lbl">Minutes</span></div>
+          <div class="stat-card"><span class="stat-num green">100%</span><span class="stat-lbl">Personalised</span></div>
+        </div>
+        <button class="btn-start" onclick="goToSlide(1)">Get started →</button>
+        <p class="welcome-terms">No account required &nbsp;·&nbsp; Responses are kept confidential</p>
+      </div>
+    </div>
+
+    <!-- SLIDE 1: INDUSTRY -->
+    <div class="slide" data-slide="1">
+      <div class="card">
+        <div class="section-label"><span class="sdot"></span>Company profile · 1 of 8</div>
+        <h2 class="q-title">Which industry best describes <strong>your organisation?</strong></h2>
+        <p class="q-sub">We'll use this to contextualise your data needs within your sector.</p>
+        <div class="option-grid cols-2" data-group="industry" data-required="1">
+          <div class="opt-chip" data-value="finance" onclick="selectOpt(this)"><div class="opt-radio"><div class="opt-radio-dot"></div></div><span class="opt-emoji">🏦</span><div class="opt-body"><div class="opt-title">Financial Services</div><div class="opt-sub">Banking, insurance, fintech</div></div></div>
+          <div class="opt-chip" data-value="retail" onclick="selectOpt(this)"><div class="opt-radio"><div class="opt-radio-dot"></div></div><span class="opt-emoji">🛍️</span><div class="opt-body"><div class="opt-title">Retail & E-commerce</div><div class="opt-sub">Consumer goods, marketplace</div></div></div>
+          <div class="opt-chip" data-value="health" onclick="selectOpt(this)"><div class="opt-radio"><div class="opt-radio-dot"></div></div><span class="opt-emoji">🏥</span><div class="opt-body"><div class="opt-title">Healthcare & Life Sciences</div><div class="opt-sub">MedTech, pharma, clinics</div></div></div>
+          <div class="opt-chip" data-value="tech" onclick="selectOpt(this)"><div class="opt-radio"><div class="opt-radio-dot"></div></div><span class="opt-emoji">💻</span><div class="opt-body"><div class="opt-title">Technology & SaaS</div><div class="opt-sub">Software, platforms, AI/ML</div></div></div>
+          <div class="opt-chip" data-value="manufacturing" onclick="selectOpt(this)"><div class="opt-radio"><div class="opt-radio-dot"></div></div><span class="opt-emoji">🏭</span><div class="opt-body"><div class="opt-title">Manufacturing & Logistics</div><div class="opt-sub">Supply chain, operations</div></div></div>
+          <div class="opt-chip" data-value="other" onclick="selectOpt(this)"><div class="opt-radio"><div class="opt-radio-dot"></div></div><span class="opt-emoji">🌐</span><div class="opt-body"><div class="opt-title">Other / Public Sector</div><div class="opt-sub">Government, NGO, education</div></div></div>
+        </div>
+        <div class="nav-row">
+          <button class="btn-back" onclick="goToSlide(0)">← Back</button>
+          <button class="btn-next" id="btn1" onclick="nextSlide(1,2)" disabled>Next</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 2: SIZE -->
+    <div class="slide" data-slide="2">
+      <div class="card">
+        <div class="section-label"><span class="sdot"></span>Company profile · 2 of 8</div>
+        <h2 class="q-title">How large is <strong>your team?</strong></h2>
+        <p class="q-sub">Team size helps us match the right engagement model and tooling approach.</p>
+        <div class="option-grid" data-group="size" data-required="1">
+          <div class="opt-chip" data-value="startup" onclick="selectOpt(this)"><div class="opt-radio"><div class="opt-radio-dot"></div></div><span class="opt-emoji">🌱</span><div class="opt-body"><div class="opt-title">1 – 25 employees</div><div class="opt-sub">Early stage / startup</div></div></div>
+          <div class="opt-chip" data-value="sme" onclick="selectOpt(this)"><div class="opt-radio"><div class="opt-radio-dot"></div></div><span class="opt-emoji">📈</span><div class="opt-body"><div class="opt-title">26 – 200 employees</div><div class="opt-sub">Scale-up / SME</div></div></div>
+          <div class="opt-chip" data-value="midmarket" onclick="selectOpt(this)"><div class="opt-radio"><div class="opt-radio-dot"></div></div><span class="opt-emoji">🏢</span><div class="opt-body"><div class="opt-title">201 – 1,000 employees</div><div class="opt-sub">Mid-market</div></div></div>
+          <div class="opt-chip" data-value="enterprise" onclick="selectOpt(this)"><div class="opt-radio"><div class="opt-radio-dot"></div></div><span class="opt-emoji">🌍</span><div class="opt-body"><div class="opt-title">1,000+ employees</div><div class="opt-sub">Enterprise / multinational</div></div></div>
+        </div>
+        <div class="nav-row">
+          <button class="btn-back" onclick="goToSlide(1)">← Back</button>
+          <button class="btn-next" id="btn2" onclick="nextSlide(2,3)" disabled>Next</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 3: INFRASTRUCTURE -->
+    <div class="slide" data-slide="3">
+      <div class="card">
+        <div class="section-label"><span class="sdot"></span>Infrastructure · 3 of 8</div>
+        <h2 class="q-title">Where does your <strong>data currently live?</strong></h2>
+        <p class="q-sub">Select all that apply — we want to understand your full data estate.</p>
+        <div class="cb-grid" data-group="infra" data-multi="true">
+          <div class="cb-chip" data-value="spreadsheets" onclick="toggleCb(this)"><div class="cb-box"><div class="cb-tick"></div></div><span class="cb-label-text">Spreadsheets (Excel / Google Sheets)</span><span class="cb-badge">Manual</span></div>
+          <div class="cb-chip" data-value="rdbms" onclick="toggleCb(this)"><div class="cb-box"><div class="cb-tick"></div></div><span class="cb-label-text">Relational databases (PostgreSQL, MySQL, SQL Server)</span><span class="cb-badge">Structured</span></div>
+          <div class="cb-chip" data-value="cloud_wh" onclick="toggleCb(this)"><div class="cb-box"><div class="cb-tick"></div></div><span class="cb-label-text">Cloud data warehouse (Snowflake, BigQuery, Redshift)</span><span class="cb-badge">Cloud</span></div>
+          <div class="cb-chip" data-value="data_lake" onclick="toggleCb(this)"><div class="cb-box"><div class="cb-tick"></div></div><span class="cb-label-text">Data lake or lakehouse (S3, Databricks, Delta Lake)</span><span class="cb-badge">Lake</span></div>
+          <div class="cb-chip" data-value="saas" onclick="toggleCb(this)"><div class="cb-box"><div class="cb-tick"></div></div><span class="cb-label-text">SaaS tools (Salesforce, HubSpot, Stripe, etc.)</span><span class="cb-badge">SaaS</span></div>
+          <div class="cb-chip" data-value="on_prem" onclick="toggleCb(this)"><div class="cb-box"><div class="cb-tick"></div></div><span class="cb-label-text">On-premise systems / legacy infrastructure</span><span class="cb-badge">On-prem</span></div>
+        </div>
+        <div class="nav-row">
+          <button class="btn-back" onclick="goToSlide(2)">← Back</button>
+          <button class="btn-next" onclick="nextSlide(3,4)">Next</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 4: PAIN POINTS -->
+    <div class="slide" data-slide="4">
+      <div class="card">
+        <div class="section-label"><span class="sdot"></span>Challenges · 4 of 8</div>
+        <h2 class="q-title">What challenges are <strong>slowing you down?</strong></h2>
+        <p class="q-sub">Select every challenge that resonates with your current situation.</p>
+        <div class="cb-grid" data-group="pain" data-multi="true">
+          <div class="cb-chip" data-value="silos" onclick="toggleCb(this)"><div class="cb-box"><div class="cb-tick"></div></div><span class="cb-label-text">Data silos — teams can't access each other's data</span></div>
+          <div class="cb-chip" data-value="quality" onclick="toggleCb(this)"><div class="cb-box"><div class="cb-tick"></div></div><span class="cb-label-text">Poor data quality — inaccurate or inconsistent records</span></div>
+          <div class="cb-chip" data-value="slow_reports" onclick="toggleCb(this)"><div class="cb-box"><div class="cb-tick"></div></div><span class="cb-label-text">Slow reporting — dashboards and reports take too long</span></div>
+          <div class="cb-chip" data-value="no_insights" onclick="toggleCb(this)"><div class="cb-box"><div class="cb-tick"></div></div><span class="cb-label-text">Lack of actionable insights from existing data</span></div>
+          <div class="cb-chip" data-value="compliance" onclick="toggleCb(this)"><div class="cb-box"><div class="cb-tick"></div></div><span class="cb-label-text">Compliance concerns — GDPR, POPIA, HIPAA, or similar</span></div>
+          <div class="cb-chip" data-value="scaling" onclick="toggleCb(this)"><div class="cb-box"><div class="cb-tick"></div></div><span class="cb-label-text">Scaling issues — infrastructure can't handle data volume</span></div>
+          <div class="cb-chip" data-value="no_team" onclick="toggleCb(this)"><div class="cb-box"><div class="cb-tick"></div></div><span class="cb-label-text">No in-house data engineering or analytics capability</span></div>
+        </div>
+        <div class="nav-row">
+          <button class="btn-back" onclick="goToSlide(3)">← Back</button>
+          <button class="btn-next" onclick="nextSlide(4,5)">Next</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 5: MATURITY -->
+    <div class="slide" data-slide="5">
+      <div class="card">
+        <div class="section-label"><span class="sdot"></span>Data maturity · 5 of 8</div>
+        <h2 class="q-title">Where are you on the <strong>data maturity curve?</strong></h2>
+        <p class="q-sub">Be honest — there's no wrong answer. This shapes our recommendation significantly.</p>
+        <div class="option-grid" data-group="maturity" data-required="1">
+          <div class="opt-chip" data-value="1" onclick="selectOpt(this)"><div class="opt-radio"><div class="opt-radio-dot"></div></div><span class="opt-emoji">🔦</span><div class="opt-body"><div class="opt-title">Reactive</div><div class="opt-sub">Decisions are gut-feel; data is barely captured</div></div></div>
+          <div class="opt-chip" data-value="2" onclick="selectOpt(this)"><div class="opt-radio"><div class="opt-radio-dot"></div></div><span class="opt-emoji">📊</span><div class="opt-body"><div class="opt-title">Descriptive</div><div class="opt-sub">Some reporting exists but it's manual and inconsistent</div></div></div>
+          <div class="opt-chip" data-value="3" onclick="selectOpt(this)"><div class="opt-radio"><div class="opt-radio-dot"></div></div><span class="opt-emoji">🔍</span><div class="opt-body"><div class="opt-title">Analytical</div><div class="opt-sub">Dashboards exist, but fragmented across teams</div></div></div>
+          <div class="opt-chip" data-value="4" onclick="selectOpt(this)"><div class="opt-radio"><div class="opt-radio-dot"></div></div><span class="opt-emoji">🤖</span><div class="opt-body"><div class="opt-title">Predictive</div><div class="opt-sub">We use models and forecasting; want to scale further</div></div></div>
+        </div>
+        <div class="nav-row">
+          <button class="btn-back" onclick="goToSlide(4)">← Back</button>
+          <button class="btn-next" id="btn5" onclick="nextSlide(5,6)" disabled>Next</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 6: GOALS -->
+    <div class="slide" data-slide="6">
+      <div class="card">
+        <div class="section-label"><span class="sdot"></span>Goals · 6 of 8</div>
+        <h2 class="q-title">What outcome <strong>matters most</strong> to you?</h2>
+        <p class="q-sub">Select your primary objective for the next 12 months.</p>
+        <div class="option-grid cols-2" data-group="goal" data-required="1">
+          <div class="opt-chip" data-value="pipeline" onclick="selectOpt(this)"><div class="opt-radio"><div class="opt-radio-dot"></div></div><span class="opt-emoji">🔧</span><div class="opt-body"><div class="opt-title">Reliable data pipelines</div><div class="opt-sub">Automate data movement and transformation</div></div></div>
+          <div class="opt-chip" data-value="analytics" onclick="selectOpt(this)"><div class="opt-radio"><div class="opt-radio-dot"></div></div><span class="opt-emoji">📡</span><div class="opt-body"><div class="opt-title">Self-serve analytics</div><div class="opt-sub">Empower teams to answer their own questions</div></div></div>
+          <div class="opt-chip" data-value="ml" onclick="selectOpt(this)"><div class="opt-radio"><div class="opt-radio-dot"></div></div><span class="opt-emoji">🧠</span><div class="opt-body"><div class="opt-title">ML & AI deployment</div><div class="opt-sub">Predictions, automation, intelligent products</div></div></div>
+          <div class="opt-chip" data-value="governance" onclick="selectOpt(this)"><div class="opt-radio"><div class="opt-radio-dot"></div></div><span class="opt-emoji">🔐</span><div class="opt-body"><div class="opt-title">Data governance</div><div class="opt-sub">Cataloguing, lineage, quality, and compliance</div></div></div>
+          <div class="opt-chip" data-value="strategy" onclick="selectOpt(this)"><div class="opt-radio"><div class="opt-radio-dot"></div></div><span class="opt-emoji">🗺️</span><div class="opt-body"><div class="opt-title">Data strategy</div><div class="opt-sub">Roadmap, team design, and tool selection</div></div></div>
+          <div class="opt-chip" data-value="realtime" onclick="selectOpt(this)"><div class="opt-radio"><div class="opt-radio-dot"></div></div><span class="opt-emoji">⚡</span><div class="opt-body"><div class="opt-title">Real-time & streaming</div><div class="opt-sub">Event-driven, low-latency data products</div></div></div>
+        </div>
+        <div class="nav-row">
+          <button class="btn-back" onclick="goToSlide(5)">← Back</button>
+          <button class="btn-next" id="btn6" onclick="nextSlide(6,7)" disabled>Next</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 7: BUDGET -->
+    <div class="slide" data-slide="7">
+      <div class="card">
+        <div class="section-label"><span class="sdot"></span>Investment · 7 of 8</div>
+        <h2 class="q-title">What's your <strong>budget range and timeline?</strong></h2>
+        <p class="q-sub">This helps us suggest the right programme size and pace of engagement.</p>
+
+        <p style="font-size:13px; font-weight:500; color:var(--ink-2); margin-bottom:10px; font-family:var(--font);">Annual budget for data initiatives</p>
+        <div class="slider-wrap">
+          <div class="slider-track-label"><span>&lt; $50k</span><span>$50k–$200k</span><span>$200k–$500k</span><span>$500k+</span></div>
+          <input type="range" id="budgetRange" min="1" max="4" value="2" step="1" oninput="updateBudget(this.value)">
+          <div class="slider-val-wrap"><span class="slider-value" id="budgetLabel">$50k – $200k</span></div>
+        </div>
+
+        <div class="g-divider"></div>
+        <p style="font-size:13px; font-weight:500; color:var(--ink-2); margin-bottom:12px; font-family:var(--font);">Desired timeline to first impact</p>
+        <div class="option-grid cols-3" data-group="timeline" data-required="1">
+          <div class="opt-chip" style="flex-direction:column;align-items:center;text-align:center;gap:6px;" data-value="asap" onclick="selectOpt(this)"><div class="opt-radio" style="margin:0 auto;"><div class="opt-radio-dot"></div></div><div class="opt-body" style="text-align:center;"><div class="opt-title">ASAP</div><div class="opt-sub">Within 4 weeks</div></div></div>
+          <div class="opt-chip" style="flex-direction:column;align-items:center;text-align:center;gap:6px;" data-value="quarter" onclick="selectOpt(this)"><div class="opt-radio" style="margin:0 auto;"><div class="opt-radio-dot"></div></div><div class="opt-body" style="text-align:center;"><div class="opt-title">This quarter</div><div class="opt-sub">1 – 3 months</div></div></div>
+          <div class="opt-chip" style="flex-direction:column;align-items:center;text-align:center;gap:6px;" data-value="halfyear" onclick="selectOpt(this)"><div class="opt-radio" style="margin:0 auto;"><div class="opt-radio-dot"></div></div><div class="opt-body" style="text-align:center;"><div class="opt-title">This year</div><div class="opt-sub">3 – 12 months</div></div></div>
+        </div>
+        <div class="nav-row">
+          <button class="btn-back" onclick="goToSlide(6)">← Back</button>
+          <button class="btn-next" id="btn7" onclick="nextSlide(7,8)" disabled>Next</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 8: CONTACT -->
+    <div class="slide" data-slide="8">
+      <div class="card">
+        <div class="section-label"><span class="sdot"></span>Almost done · 8 of 8</div>
+        <h2 class="q-title">Where should we send your <strong>personalised report?</strong></h2>
+        <p class="q-sub">Your results are ready immediately — a full written report arrives within one business day.</p>
+        <input type="text" id="nameInput" class="text-field" placeholder="Full name" oninput="checkContact()">
+        <input type="email" id="emailInput" class="text-field" placeholder="Work email address" oninput="checkContact()">
+        <input type="text" id="companyInput" class="text-field" placeholder="Company name (optional)">
+        <div class="nav-row">
+          <button class="btn-back" onclick="goToSlide(7)">← Back</button>
+          <button class="btn-next" id="btn8" onclick="showResults()" disabled>View my recommendations</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 9: RESULTS -->
+    <div class="slide" data-slide="9">
+      <div class="card" style="text-align:center;padding-bottom:32px;">
+        <div class="g-completion-badge"><span class="g-cdot"></span> Assessment complete</div>
+        <h2 class="results-title">Your <strong>Data Blueprint</strong></h2>
+        <p class="results-sub">Based on your responses, here are our tailored recommendations</p>
+      </div>
+
+      <div class="maturity-card">
+        <div class="maturity-score-wrap">
+          <div class="maturity-num" id="maturityScore">—</div>
+          <span class="maturity-score-lbl">Maturity index</span>
+        </div>
+        <div class="maturity-detail">
+          <div class="maturity-stage-name" id="maturityStage">Calculating...</div>
+          <div class="g-progress"><div class="g-progress-fill" id="maturityFill"></div></div>
+          <div class="maturity-note" id="maturityNote"></div>
+        </div>
+      </div>
+
+      <div class="service-grid" id="serviceCards"></div>
+
+      <div class="cta-card">
+        <p class="cta-eyebrow">Next step</p>
+        <h3 class="cta-title">Ready to move forward?</h3>
+        <p class="cta-sub">Book a complimentary 45-minute discovery call with a senior DataAxis consultant.</p>
+        <div class="cta-btns">
+          <button class="btn-cta-filled">📅 Book a discovery call</button>
+          <button class="btn-cta-tonal" onclick="window.print()">↓ Save report</button>
+        </div>
+      </div>
+
+      <a class="restart-link" onclick="restart();return false;">↺ Retake the assessment</a>
+    </div>
+
+  </div>
+</main>
+
+<footer>&copy; 2025 DataAxis Consulting &nbsp;·&nbsp; <a href="#">Privacy policy</a> &nbsp;·&nbsp; Responses kept strictly confidential</footer>
+
+<script>
+const answers = {};
+const TOTAL = 8;
+const budgetLabels = ['Less than $50k','$50k – $200k','$200k – $500k','$500k or more'];
+
+function buildStepper() {
+  const bar = document.getElementById('stepperBar');
+  for (let i = 1; i <= TOTAL; i++) {
+    const pip = document.createElement('div');
+    pip.className = 'step-pip';
+    pip.innerHTML = `<div class="step-dot" id="sdot-${i}">${i}</div><div class="step-line" id="sline-${i}"></div>`;
+    bar.appendChild(pip);
+  }
+}
+
+function updateStepper(cur) {
+  const bar = document.getElementById('stepperBar');
+  if (cur === 0) { bar.classList.remove('visible'); return; }
+  bar.classList.add('visible');
+  for (let i = 1; i <= TOTAL; i++) {
+    const dot = document.getElementById('sdot-'+i);
+    const line = document.getElementById('sline-'+i);
+    dot.className = 'step-dot'+(i<cur?' done':i===cur?' active':'');
+    dot.textContent = i < cur ? '✓' : i;
+    if (line) line.className = 'step-line'+(i<cur?' done':'');
+  }
+}
+
+buildStepper();
+
+function goToSlide(n) {
+  document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
+  document.querySelector('[data-slide="'+n+'"]').classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+  updateStepper(n);
+}
+
+function nextSlide(cur, nxt) { saveSlide(cur); goToSlide(nxt); }
+
+function saveSlide(n) {
+  const el = document.querySelector('[data-slide="'+n+'"]');
+  if (!el) return;
+  el.querySelectorAll('[data-group]').forEach(g => {
+    const k = g.dataset.group;
+    if (g.dataset.multi) {
+      answers[k] = [...g.querySelectorAll('.cb-chip.checked')].map(c => c.dataset.value);
+    } else {
+      const s = g.querySelector('.opt-chip.selected');
+      if (s) answers[k] = s.dataset.value;
+    }
+  });
+  if (n===7) answers.budget = document.getElementById('budgetRange').value;
+  if (n===8) { answers.name=document.getElementById('nameInput').value; answers.email=document.getElementById('emailInput').value; answers.company=document.getElementById('companyInput').value; }
+}
+
+function selectOpt(chip) {
+  const g = chip.closest('[data-group]');
+  g.querySelectorAll('.opt-chip').forEach(c => c.classList.remove('selected'));
+  chip.classList.add('selected');
+  const btn = document.getElementById('btn'+chip.closest('.slide').dataset.slide);
+  if (btn) btn.disabled = false;
+}
+
+function toggleCb(chip) { chip.classList.toggle('checked'); }
+function updateBudget(v) { document.getElementById('budgetLabel').textContent = budgetLabels[v-1]; }
+function checkContact() {
+  const name=document.getElementById('nameInput').value.trim();
+  const email=document.getElementById('emailInput').value.trim();
+  document.getElementById('btn8').disabled = !(name && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email));
+}
+
+const SVC = {
+  pipeline:   { icon:'🔧', name:'Data Engineering & Pipeline Architecture', desc:'Design and build reliable, automated data pipelines using dbt, Airflow, and Spark — eliminating manual wrangling and establishing trusted data flows from source to consumer.', tags:['dbt','Apache Airflow','ETL/ELT','Data Pipelines','Orchestration'] },
+  analytics:  { icon:'📡', name:'Analytics & Business Intelligence', desc:'Deploy modern BI platforms (Looker, Metabase, Power BI) with a semantic layer so every team can answer their own data questions without waiting on analysts.', tags:['Looker','Power BI','Semantic Layer','Self-serve BI','Dashboards'] },
+  ml:         { icon:'🧠', name:'Machine Learning & AI Enablement', desc:'From feature stores to model serving, we build the ML infrastructure that takes data science from notebook to production — reliably and at scale.', tags:['MLflow','Feature Store','Model Serving','MLOps','Python'] },
+  governance: { icon:'🔐', name:'Data Governance & Compliance', desc:'Establish a data catalogue, lineage tracking, access controls, and quality monitoring — ensuring trust, traceability, and regulatory compliance.', tags:['Data Catalogue','GDPR/POPIA','Data Quality','Lineage','RBAC'] },
+  strategy:   { icon:'🗺️', name:'Data Strategy & Roadmap', desc:'An advisory engagement to define your data vision, select the right tooling, design your data team, and build a prioritised 12-month execution roadmap.', tags:['Roadmap','Tool Selection','Team Design','Modern Data Stack'] },
+  realtime:   { icon:'⚡', name:'Real-time Streaming Architecture', desc:'Build event-driven systems with Kafka, Flink, or Kinesis — enabling millisecond-latency insights, live dashboards, and responsive data products.', tags:['Kafka','Apache Flink','Event-driven','Streaming','Low-latency'] }
+};
+
+const PAIN_MAP = { silos:'pipeline', quality:'governance', slow_reports:'analytics', no_insights:'analytics', compliance:'governance', scaling:'pipeline', no_team:'strategy' };
+const MATURITY = { '1':{label:'Reactive',pct:12,note:'Strong opportunity for foundational investment.'}, '2':{label:'Descriptive',pct:38,note:'Ready to formalise your data infrastructure.'}, '3':{label:'Analytical',pct:64,note:'Positioned to unlock advanced analytics.'}, '4':{label:'Predictive',pct:88,note:'Primed for AI and real-time data products.'} };
+
+function showResults() {
+  saveSlide(8);
+  const keys = new Set();
+  if (answers.goal) keys.add(answers.goal);
+  (answers.pain||[]).forEach(p => { if (PAIN_MAP[p]) keys.add(PAIN_MAP[p]); });
+  ['strategy','pipeline','analytics','governance'].forEach(k => { if (keys.size<3) keys.add(k); });
+  const container = document.getElementById('serviceCards');
+  container.innerHTML = '';
+  [...keys].slice(0,4).forEach((k,i) => {
+    const s = SVC[k]; if (!s) return;
+    const top = i===0;
+    const tags = s.tags.map(t=>`<span class="g-tag">${t}</span>`).join('');
+    container.innerHTML += `<div class="svc-card${top?' top-match':''}" style="animation-delay:${i*0.08}s"><div class="svc-icon">${s.icon}</div><div class="svc-info"><div class="svc-name">${s.name}${top?'<span class="top-pill">Top match</span>':''}</div><div class="svc-desc">${s.desc}</div><div class="tag-row">${tags}</div></div></div>`;
+  });
+  const m = MATURITY[answers.maturity]||{label:'Developing',pct:30,note:'Good potential for growth.'};
+  document.getElementById('maturityScore').textContent = m.pct+'%';
+  document.getElementById('maturityStage').textContent = m.label;
+  document.getElementById('maturityNote').textContent = m.note;
+  setTimeout(()=>{ document.getElementById('maturityFill').style.width = m.pct+'%'; }, 250);
+  goToSlide(9);
+}
+
+function restart() {
+  Object.keys(answers).forEach(k=>delete answers[k]);
+  document.querySelectorAll('.opt-chip.selected').forEach(c=>c.classList.remove('selected'));
+  document.querySelectorAll('.cb-chip.checked').forEach(c=>c.classList.remove('checked'));
+  ['nameInput','emailInput','companyInput'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('budgetRange').value=2; updateBudget(2);
+  ['btn1','btn2','btn5','btn6','btn7','btn8'].forEach(id=>{ const b=document.getElementById(id); if(b)b.disabled=true; });
+  goToSlide(0);
+}
+</script>
+</body>
+</html>
