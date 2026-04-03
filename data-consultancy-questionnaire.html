@@ -323,7 +323,7 @@ footer a { color: var(--blue); text-decoration: none; }
       <div class="logo-bar"></div><div class="logo-bar"></div>
       <div class="logo-bar"></div><div class="logo-bar"></div>
     </div>
-    <span class="logo-name">Data<span>Axis</span></span>
+    <span class="logo-name">masinsightdata</span></span>
   </a>
   <div class="header-right">
     <span class="header-chip">Data Assessment</span>
@@ -645,12 +645,54 @@ const SVC = {
 const PAIN_MAP = { silos:'pipeline', quality:'governance', slow_reports:'analytics', no_insights:'analytics', compliance:'governance', scaling:'pipeline', no_team:'strategy' };
 const MATURITY = { '1':{label:'Reactive',pct:12,note:'Strong opportunity for foundational investment.'}, '2':{label:'Descriptive',pct:38,note:'Ready to formalise your data infrastructure.'}, '3':{label:'Analytical',pct:64,note:'Positioned to unlock advanced analytics.'}, '4':{label:'Predictive',pct:88,note:'Primed for AI and real-time data products.'} };
 
+const BUDGET_LABELS = ['Less than $50k','$50k – $200k','$200k – $500k','$500k or more'];
+const INDUSTRY_LABELS = { finance:'Financial Services', retail:'Retail & E-commerce', health:'Healthcare & Life Sciences', tech:'Technology & SaaS', manufacturing:'Manufacturing & Logistics', other:'Other / Public Sector' };
+const SIZE_LABELS = { startup:'1–25 employees', sme:'26–200 employees', midmarket:'201–1,000 employees', enterprise:'1,000+ employees' };
+const GOAL_LABELS = { pipeline:'Reliable data pipelines', analytics:'Self-serve analytics', ml:'ML & AI deployment', governance:'Data governance', strategy:'Data strategy', realtime:'Real-time & streaming' };
+const TIMELINE_LABELS = { asap:'ASAP (within 4 weeks)', quarter:'This quarter (1–3 months)', halfyear:'This year (3–12 months)' };
+
+async function submitToFormspree(payload) {
+  try {
+    await fetch('https://formspree.io/f/xbdpzdyg', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+  } catch(e) {
+    console.warn('Formspree submission failed:', e);
+  }
+}
+
 function showResults() {
   saveSlide(8);
+
   const keys = new Set();
   if (answers.goal) keys.add(answers.goal);
   (answers.pain||[]).forEach(p => { if (PAIN_MAP[p]) keys.add(PAIN_MAP[p]); });
   ['strategy','pipeline','analytics','governance'].forEach(k => { if (keys.size<3) keys.add(k); });
+  const recommendedServices = [...keys].slice(0,4).map((k,i) => (i===0?'★ ':'')+( SVC[k]?.name||k ));
+
+  const m = MATURITY[answers.maturity]||{label:'Developing',pct:30,note:'Good potential for growth.'};
+
+  const payload = {
+    name:                  answers.name || '',
+    email:                 answers.email || '',
+    company:               answers.company || '',
+    industry:              INDUSTRY_LABELS[answers.industry] || answers.industry || '',
+    company_size:          SIZE_LABELS[answers.size] || answers.size || '',
+    data_infrastructure:   (answers.infra||[]).join(', '),
+    pain_points:           (answers.pain||[]).join(', '),
+    data_maturity:         m.label,
+    maturity_score:        m.pct + '%',
+    primary_goal:          GOAL_LABELS[answers.goal] || answers.goal || '',
+    annual_budget:         BUDGET_LABELS[(answers.budget||2)-1],
+    timeline:              TIMELINE_LABELS[answers.timeline] || answers.timeline || '',
+    recommended_services:  recommendedServices.join(' | '),
+    submitted_at:          new Date().toISOString()
+  };
+
+  submitToFormspree(payload);
+
   const container = document.getElementById('serviceCards');
   container.innerHTML = '';
   [...keys].slice(0,4).forEach((k,i) => {
@@ -659,7 +701,7 @@ function showResults() {
     const tags = s.tags.map(t=>`<span class="g-tag">${t}</span>`).join('');
     container.innerHTML += `<div class="svc-card${top?' top-match':''}" style="animation-delay:${i*0.08}s"><div class="svc-icon">${s.icon}</div><div class="svc-info"><div class="svc-name">${s.name}${top?'<span class="top-pill">Top match</span>':''}</div><div class="svc-desc">${s.desc}</div><div class="tag-row">${tags}</div></div></div>`;
   });
-  const m = MATURITY[answers.maturity]||{label:'Developing',pct:30,note:'Good potential for growth.'};
+
   document.getElementById('maturityScore').textContent = m.pct+'%';
   document.getElementById('maturityStage').textContent = m.label;
   document.getElementById('maturityNote').textContent = m.note;
