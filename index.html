@@ -616,18 +616,23 @@ footer a { color: var(--blue); text-decoration: none; }
     <div class="slide" data-slide="8">
       <div class="card">
         <div class="section-label"><span class="sdot"></span>Almost done · 8 of 8</div>
-        <h2 class="q-title">Where should we send your <strong>personalised report?</strong></h2>
-        <p class="q-sub">Your results are ready immediately — a full written report arrives within one business day.</p>
+        <h2 class="q-title">Where should we personalise <strong>your report?</strong></h2>
+        <p class="q-sub">
+          Add your details to unlock your tailored Data Blueprint. Your report will appear immediately after submission.
+        </p>
+    
         <input type="text" id="nameInput" class="text-field" placeholder="Full name" oninput="checkContact()">
         <input type="email" id="emailInput" class="text-field" placeholder="Work email address" oninput="checkContact()">
         <input type="text" id="companyInput" class="text-field" placeholder="Company name (optional)">
+    
         <p class="welcome-terms" style="text-align:left; margin-top:4px; margin-bottom:18px;">
-          By submitting this assessment, you agree that masinsightdata may process your responses to generate your recommendation and contact you about relevant services. 
+          By submitting this assessment, you agree that masinsightdata may process your responses to generate your report and follow up about relevant services.
           Read our <a href="#" onclick="openPrivacyPolicy(); return false;">Privacy Policy</a>.
         </p>
+    
         <div class="nav-row">
           <button class="btn-back" onclick="goToSlide(7)">← Back</button>
-          <button class="btn-next" id="btn8" onclick="showResults()" disabled>View my recommendations</button>
+          <button class="btn-next" id="btn8" onclick="showResults()" disabled>View my report</button>
         </div>
       </div>
     </div>
