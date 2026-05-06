@@ -587,9 +587,15 @@ footer a { color: var(--blue); text-decoration: none; }
 
         <p style="font-size:13px; font-weight:500; color:var(--ink-2); margin-bottom:10px; font-family:var(--font);">Annual budget for data initiatives</p>
         <div class="slider-wrap">
-          <div class="slider-track-label"><span>&lt; $50k</span><span>$50k–$200k</span><span>$200k–$500k</span><span>$500k+</span></div>
-          <input type="range" id="budgetRange" min="1" max="4" value="2" step="1" oninput="updateBudget(this.value)">
-          <div class="slider-val-wrap"><span class="slider-value" id="budgetLabel">$50k – $200k</span></div>
+          <div class="slider-track-label">
+            <span>No budget yet</span>
+            <span>&lt; R10k</span>
+            <span>R10k–R25k</span>
+            <span>R25k–R50k</span>
+            <span>R50k+</span>
+          </div>
+          <input type="range" id="budgetRange" min="1" max="5" value="1" step="1" oninput="updateBudget(this.value)">
+          <div class="slider-val-wrap"><span class="slider-value" id="budgetLabel">No budget yet</span></div>
         </div>
 
         <div class="g-divider"></div>
@@ -810,7 +816,7 @@ footer a { color: var(--blue); text-decoration: none; }
 <script>
 const answers = {};
 const TOTAL = 8;
-const budgetLabels = ['Less than $50k','$50k – $200k','$200k – $500k','$500k or more'];
+const budgetLabels = ['No budget yet','Less than R10k','R10k – R25k','R25k – R50k','R50k or more'];
 
 function openPrivacyPolicy() {
   document.getElementById('privacyModal').classList.add('active');
@@ -913,7 +919,7 @@ const SVC = {
 const PAIN_MAP = { silos:'pipeline', quality:'governance', slow_reports:'analytics', no_insights:'analytics', compliance:'governance', scaling:'pipeline', no_team:'strategy' };
 const MATURITY = { '1':{label:'Reactive',pct:12,note:'Strong opportunity for foundational investment.'}, '2':{label:'Descriptive',pct:38,note:'Ready to formalise your data infrastructure.'}, '3':{label:'Analytical',pct:64,note:'Positioned to unlock advanced analytics.'}, '4':{label:'Predictive',pct:88,note:'Primed for AI and real-time data products.'} };
 
-const BUDGET_LABELS = ['Less than $50k','$50k – $200k','$200k – $500k','$500k or more'];
+const BUDGET_LABELS = ['No budget yet','Less than R10k','R10k – R25k','R25k – R50k','R50k or more'];
 const INDUSTRY_LABELS = { finance:'Financial Services', retail:'Retail & E-commerce', health:'Healthcare & Life Sciences', tech:'Technology & SaaS', manufacturing:'Manufacturing & Logistics', other:'Other / Public Sector' };
 const SIZE_LABELS = { startup:'1–25 employees', sme:'26–200 employees', midmarket:'201–1,000 employees', enterprise:'1,000+ employees' };
 const GOAL_LABELS = { pipeline:'Reliable data pipelines', analytics:'Self-serve analytics', ml:'ML & AI deployment', governance:'Data governance', strategy:'Data strategy', realtime:'Real-time & streaming' };
@@ -982,7 +988,7 @@ function restart() {
   document.querySelectorAll('.opt-chip.selected').forEach(c=>c.classList.remove('selected'));
   document.querySelectorAll('.cb-chip.checked').forEach(c=>c.classList.remove('checked'));
   ['nameInput','emailInput','companyInput'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('budgetRange').value=2; updateBudget(2);
+  document.getElementById('budgetRange').value=1; updateBudget(1);
   ['btn1','btn2','btn5','btn6','btn7','btn8'].forEach(id=>{ const b=document.getElementById(id); if(b)b.disabled=true; });
   goToSlide(0);
 }
